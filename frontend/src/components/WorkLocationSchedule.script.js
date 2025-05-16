@@ -2,6 +2,7 @@ import { ref, computed } from 'vue'
 import { fetchUsers, fetchSchedules, updateSchedule } from '../api/schedule.js'
 import { fetchHolidays } from '../api/schedule.js'
 import { api } from '../api/auth.js'
+import { updateCommutingAllowance } from '../api/schedule.js'
 
 export const currentUser = ref(null)
 export const users = ref([])
@@ -184,3 +185,12 @@ export async function toggleLocation(userId, day) {
     }
 }
 
+// 通勤手当をクリックで「申請 → 停止 → 不要 → 申請...」と切り替える
+export async function toggleCommutingAllowance(user) {
+    const options = ['申請', '停止', '不要']
+    const currentIndex = options.indexOf(user.commuting_allowance || '不要')
+    const nextValue = options[(currentIndex + 1) % options.length]
+
+    user.commuting_allowance = nextValue
+    await updateCommutingAllowance(user.id, nextValue)
+}

@@ -26,7 +26,11 @@
             <tbody>
                 <tr v-for="user in users" :key="user.id">
                     <td>{{ user.name }}</td>
-                    <td>{{ user.commuting_allowance }}</td>
+                    <!--<td>{{ user.commuting_allowance }}</td>-->
+                    <td @click="user.id === currentUser?.id ? toggleCommutingAllowance(user) : null"
+                        :style="{ cursor: user.id === currentUser?.id ? 'pointer' : 'not-allowed' }">
+                        {{ user.commuting_allowance || '-' }}
+                    </td>
                     <td>{{ countZai(user.id) }}</td>
                     <!-- 通勤切替表示 -->
                     <td>
@@ -68,6 +72,7 @@ import {
     calculateWorkingDays,
     fetchCurrentUser,
     toggleLocation,
+    toggleCommutingAllowance,
     loadData,
 } from './WorkLocationSchedule.script.js'
 

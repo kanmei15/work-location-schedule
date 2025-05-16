@@ -1,4 +1,5 @@
 import os
+import logging
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,7 +13,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
 from api import schedules
-from api import users
+from api import user
 from api.routers import auth, protected
 from config import Settings
 from db import Base, engine
@@ -20,6 +21,11 @@ from db import Base, engine
 # 環境変数に応じて .env ファイルを動的に読み込む
 env_file = ".env.production" if os.getenv("ENV") == "production" else ".env.development"
 settings = Settings(_env_file=env_file)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s - %(message)s"
+)
 
 # データベースの初期化
 Base.metadata.create_all(bind=engine)
@@ -82,7 +88,7 @@ if settings.env == "production":
 # ルーターをインクルード
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(protected.router, prefix="/api/auth", tags=["protected"])
-app.include_router(users.router, prefix="/api")
+app.include_router(user.router, prefix="/api")
 app.include_router(schedules.router, prefix="/api")
 
 # 全体にレート制限（例：すべてのルートで IP 毎に1分間に30回まで）

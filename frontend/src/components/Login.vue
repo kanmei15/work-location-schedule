@@ -4,12 +4,13 @@
         <form @submit.prevent="handleLogin">
             <div>
                 <label for="email">Email:</label>
-                <input id="email" name="email" v-model="email" placeholder="Email" type="email" required />
+                <input id="email" name="email" v-model="email" placeholder="Email" type="email" required
+                    autocomplete="email" />
             </div>
             <div>
                 <label for="password">Password:</label>
-                <input id="password" name="password" v-model="password" type="password" placeholder="Password"
-                    required />
+                <input id="password" name="password" v-model="password" type="password" placeholder="Password" required
+                    autocomplete="current-password" />
             </div>
             <button type="submit">ログイン</button>
         </form>
@@ -37,8 +38,6 @@ const handleLogin = async () => {
         } else {
             router.push('/')
         }
-        //await authStore.login(email.value, password.value)
-        //router.push('/')
     } catch (e) {
         errorMessage.value = 'ログインに失敗しました。もう一度お試しください。'  // エラーメッセージ表示
     }
@@ -46,7 +45,6 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-/* スタイルをここで調整することも可能です */
 form div {
     margin-bottom: 10px;
 }
