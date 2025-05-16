@@ -1,0 +1,38 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtualenv
+#venv/
+#.env
+#.env.*
+
+# Docker
+*.log
+*.pid
+*.tar
+*.db
+*.sqlite3
+*.sock
+
+# Pytest / coverage
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+
+# IDE/editor
+.vscode/
+.idea/
+
+# Alembic
+alembic/versions/*
+!alembic/versions/.gitkeep
+
+# Jupyter
+*.ipynb_checkpoints
+
+# OS
+.DS_Store
+Thumbs.db

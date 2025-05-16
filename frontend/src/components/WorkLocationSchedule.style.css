@@ -1,0 +1,38 @@
+select {
+    margin-right: 8px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+td,
+th {
+    padding: 4px;
+    text-align: center;
+    min-width: 32px;
+    cursor: pointer;
+}
+
+.date-selectors {
+    margin-bottom: 20px;
+    /* 年月とテーブルの間隔 */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    /* 年と月の間隔 */
+}
+
+.date-selectors label {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.date-selectors select {
+    padding: 6px 12px;
+    font-size: 1rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+}
