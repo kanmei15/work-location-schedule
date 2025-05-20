@@ -10,14 +10,14 @@ export const useAuthStore = defineStore('auth', {
         async login(email, password) {
             const result = await login(email, password)
             // ログイン成功後にユーザー情報を取得
-            const response = await api.get('/api/auth/me', { withCredentials: true })
+            const response = await api.get('/auth/me', { withCredentials: true })
             this.user = response.data
             this.isAuthenticated = true
             return result
         },
         async checkAuth() {
             try {
-                const response = await api.get('/api/auth/me', { withCredentials: true })
+                const response = await api.get('/auth/me', { withCredentials: true })
                 this.user = response.data
                 this.isAuthenticated = true
             } catch (error) {
@@ -26,7 +26,7 @@ export const useAuthStore = defineStore('auth', {
             }
         },
         logout() {
-            api.post('/api/auth/logout', {}, { withCredentials: true })
+            api.post('/auth/logout', {}, { withCredentials: true })
             this.user = null
             this.isAuthenticated = false
         },

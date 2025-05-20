@@ -41,6 +41,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         refresh_token = create_refresh_token(user.id)
         csrf_token = secrets.token_hex(32) # CSRFトークンを生成
         secure_cookie = settings.env == "production"
+        secure_cookie = False  # HTTPS化するまでテストで外す
 
         # フロントが読み取れるように JSON に含めて返す
         response = JSONResponse(content={

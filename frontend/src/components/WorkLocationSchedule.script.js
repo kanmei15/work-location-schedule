@@ -157,7 +157,7 @@ function isHoliday(date) {
 }
 
 export async function fetchCurrentUser() {
-    const res = await api.get('/api/auth/me')
+    const res = await api.get('/auth/me')
     currentUser.value = res.data
 }
 

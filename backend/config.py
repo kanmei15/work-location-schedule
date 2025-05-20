@@ -1,4 +1,8 @@
+import os
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+BASE_DIR = Path(__file__).resolve().parent  # 例えば backend ディレクトリ
 
 class Settings(BaseSettings):
     env: str = "development"
@@ -18,6 +22,10 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 15
     refresh_token_expire_minutes: int = 60 * 24 * 7  # 7日
 
-    model_config = SettingsConfigDict(env_file=".env.development", env_file_encoding="utf-8")
-    
+    model_config = SettingsConfigDict(
+        env_file=str(BASE_DIR / f".env.{os.getenv('ENV', 'development')}"),
+        #env_file=f".env.{os.getenv('ENV', 'development')}",
+        env_file_encoding="utf-8"
+    )
+
 settings = Settings()

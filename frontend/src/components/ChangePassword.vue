@@ -23,9 +23,10 @@
 
 <script setup>
 import { ref } from 'vue'
-import axios from 'axios'
+import { useRouter } from 'vue-router'
+import { api } from '../api/auth.js'
+
 const router = useRouter()
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 const currentPassword = ref('')
 const newPassword = ref('')
@@ -43,14 +44,10 @@ const handleChangePassword = async () => {
     }
 
     try {
-        await axios.post(
-            `${apiUrl}/api/auth/change-password`,
-            {
-                old_password: currentPassword.value,
-                new_password: newPassword.value
-            },
-            { withCredentials: true }
-        )
+        await api.post('/auth/change-password', {
+            old_password: currentPassword.value,
+            new_password: newPassword.value
+        })
         successMessage.value = 'パスワードが変更されました。'
 
         // フォームをリセット

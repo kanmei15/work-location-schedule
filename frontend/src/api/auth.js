@@ -2,7 +2,8 @@ import axios from 'axios'
 import axiosRetry from 'axios-retry'
 import { getCookie } from '../utils/cookie'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+//const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 const api = axios.create({
     baseURL: BASE_URL,
@@ -62,7 +63,7 @@ export async function login(email, password) {
     params.append('username', email)
     params.append('password', password)
 
-    const response = await api.post('/api/auth/login', params, {
+    const response = await api.post('/auth/login', params, {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
         },
@@ -72,14 +73,14 @@ export async function login(email, password) {
 }
 
 export async function refreshToken() {
-    const response = await api.post('/api/auth/refresh', null, {
+    const response = await api.post('/auth/refresh', null, {
         withCredentials: true
     })
     return response.data
 }
 
 export async function logout() {
-    await api.post('/api/auth/logout', null, {
+    await api.post('/auth/logout', null, {
         withCredentials: true
     })
 }

@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:15
+    restart: always
+    env_file: ./backend/.env.production
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+
+  backend:
+    build: ./backend
+    depends_on:
+      - db
+    env_file: ./backend/.env.production
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: work-location-schedule-frontend
+    depends_on:
+      - backend
+    env_file: ./frontend/.env.production
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - frontend-dist:/app/dist
+    working_dir: /app
+    networks:
+      - app-network
+
+volumes:
+  pgdata:
+  frontend-dist:
+
+
+networks:
+  app-network:

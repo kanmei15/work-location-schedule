@@ -2,7 +2,7 @@ services:
   db:
     image: postgres:15
     restart: always
-    env_file: .env.development
+    env_file: ./backend/.env.development
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
@@ -14,7 +14,7 @@ services:
     build: ./backend
     depends_on:
       - db
-    env_file: .env.development
+    env_file: ./backend/.env.development
     ports:
       - "8000:8000"
     volumes:
@@ -23,10 +23,12 @@ services:
       - app-network
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
     depends_on:
       - backend
-    env_file: .env.development
+    env_file: ./frontend/.env.development
     ports:
       - "5173:5173"
     volumes:
@@ -37,17 +39,6 @@ services:
     networks:
       - app-network
     command: npm run dev
-
-  nginx:
-    build: ./nginx
-    depends_on:
-      - frontend
-      - backend
-    env_file: .env.development
-    ports:
-      - "80:80"
-    networks:
-      - app-network
 
 volumes:
   pgdata:
