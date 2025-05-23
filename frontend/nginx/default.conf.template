@@ -1,5 +1,15 @@
 server {
     listen 80;
+    server_name 35.76.190.246;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name 35.76.190.246;
+
+    ssl_certificate     /etc/nginx/ssl/selfsigned.crt;
+    ssl_certificate_key /etc/nginx/ssl/selfsigned.key;
 
     # Gzip圧縮（VueのJS/CSSサイズ削減）
     gzip on;
@@ -16,7 +26,7 @@ server {
     add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' ${CSP_CONNECT_SRC}; frame-ancestors 'none';" always;
 
     # Cookieのセキュア属性
-    #proxy_cookie_path / "/; HttpOnly; SameSite=Lax";
+    #proxy_cookie_path / "/; HttpOnly; SameSite=Lax"; #CSRFトークを許可する必要があるため、FastAPI側で制御
 
     location / {
         root /usr/share/nginx/html;

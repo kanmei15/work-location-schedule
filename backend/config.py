@@ -24,7 +24,6 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_file=str(BASE_DIR / f".env.{os.getenv('ENV', 'development')}"),
-        #env_file=f".env.{os.getenv('ENV', 'development')}",
         env_file_encoding="utf-8"
     )
 

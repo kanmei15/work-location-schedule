@@ -32,10 +32,13 @@ services:
     env_file: ./frontend/.env.production
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./frontend:/app
       - /app/node_modules
       - frontend-dist:/app/dist
+      - ./frontend/nginx/selfsigned.crt:/etc/nginx/ssl/selfsigned.crt:ro
+      - ./frontend/nginx/selfsigned.key:/etc/nginx/ssl/selfsigned.key:ro
     working_dir: /app
     networks:
       - app-network
