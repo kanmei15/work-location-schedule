@@ -14,7 +14,7 @@ from starlette.responses import Response
 
 from api import schedules
 from api import user
-from api.routers import auth, protected
+from api.routers import auth, auth_lambda, protected
 from config import settings
 from db import Base, engine
 
@@ -63,6 +63,7 @@ if settings.env == "production":
 
 # ルーターをインクルード
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(auth_lambda.router, prefix="/api/auth", tags=["auth_lambda"])
 app.include_router(protected.router, prefix="/api/auth", tags=["protected"])
 app.include_router(user.router, prefix="/api")
 app.include_router(schedules.router, prefix="/api")

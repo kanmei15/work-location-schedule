@@ -31,7 +31,14 @@ if not db.query(User).first():
         email="suzuki@test.co.jp",
         commuting_allowance="停止"
     )
-    db.add_all([user1, user2])
+    user3 = User(
+        employee_number="1003",
+        hashed_password=hashed_pw,
+        name="佐野",
+        email="hiro-sano@foresight.co.jp",
+        commuting_allowance="申請"
+    )
+    db.add_all([user1, user2, user3])
     db.commit()
 
     # ユーザーIDを取得して勤務スケジュールを追加（例）

@@ -65,11 +65,27 @@ async def verify_csrf_token(request: Request):
 
 # 認証付きルート用：現在のユーザーを取得
 async def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
-    token = request.cookies.get("access_token")
+
+    auth_header: Optional[str] = request.headers.get("Authorization")
+    token: Optional[str] = None
+
+    # Authorization ヘッダーをチェック
+    if auth_header and auth_header.startswith("Bearer "):
+        # ヘッダーに "Bearer <token>" があればそれを使う
+        token = auth_header[len("Bearer ") :].strip()
+        logger.debug("Using token from Authorization header")
+    else:
+        # ヘッダーがなければ、Cookie の access_token をチェック
+        cookie_token = request.cookies.get("access_token")
+        if cookie_token:
+            token = cookie_token
+            logger.debug("Using token from access_token cookie")
+
     if not token:
         logger.warning("Missing access token in request cookies")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
 
+    # トークンをデコードして user_id を取り出す
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         user_id: str = payload.get("sub")
@@ -82,6 +98,7 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)) -> U
         logger.warning(f"JWT decode error: {e}")
         raise HTTPException(status_code=401, detail="Invalid token")
 
+    # DB からユーザを取得
     user = db.query(User).filter(User.id == int(user_id)).first()
     if not user:
         logger.warning(f"User not found: user_id={user_id}")

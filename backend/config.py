@@ -22,6 +22,13 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 15
     refresh_token_expire_minutes: int = 60 * 24 * 7  # 7日
 
+    #smtp_host: str = "smtp.gmail.com"      # SMTPサーバのホスト名（例: smtp.gmail.com）
+    #smtp_port: int = 587                     # SMTPサーバのポート番号（STARTTLSなら通常587）
+    #smtp_user: str = "your-email@example.com"  # SMTP認証に使うメールアドレス（送信元メール）
+    #smtp_password: str = "your_password"    # SMTP認証に使うパスワード
+
+    lambda_api_key: str = "your-lambda-apy-key"
+
     model_config = SettingsConfigDict(
         env_file=str(BASE_DIR / f".env.{os.getenv('ENV', 'development')}"),
         env_file_encoding="utf-8"

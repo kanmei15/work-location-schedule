@@ -86,3 +86,22 @@ def update_commuting_allowance(user_id: int, allowance_update: AllowanceUpdate, 
     except Exception as e:
         logger.exception("Unexpected error in update_commuting_allowance")
         raise HTTPException(status_code=500, detail="Unexpected error occurred")
+
+@router.get(
+    "/users/missing-schedule",
+    dependencies=[], # ここだけヘッダー認証とする（lambdaから実行するため）
+    summary="スケジュール未登録ユーザの取得",
+    description="指定された年月に勤務スケジュールが未登録のユーザを取得します",
+    response_description="未登録ユーザのリストを返します"
+)
+def get_users_missing_schedule(year: int, month: int, db: Session = Depends(get_db)):
+    try:
+        users = crud_user.get_users_missing_schedule(db, year, month)
+        logger.info(f"{year}年{month}月の未登録ユーザー数: {len(users)}")
+        return users
+    except SQLAlchemyError as e:
+        logger.error(f"DB error in get_users_missing_schedule: {e}")
+        raise HTTPException(status_code=500, detail="Database error occurred")
+    except Exception as e:
+        logger.exception("Unexpected error in get_users_missing_schedule")
+        raise HTTPException(status_code=500, detail="Unexpected error occurred")
