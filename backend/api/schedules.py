@@ -2,16 +2,16 @@
 
 import logging
 from datetime import date
-from typing import Optional
+from typing import List, Optional,Union
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from core.security import get_current_user, verify_csrf_token
 from db import SessionLocal
 from crud import schedule as crud_schedule
+from schemas.schedule_schema import ScheduleRequest, ScheduleResponse
 
 logger = logging.getLogger(__name__)
 
@@ -26,17 +26,6 @@ def get_db():
     finally:
         db.close()
 
-class ScheduleRequest(BaseModel):
-    user_id: int = Field(..., description="ユーザID")
-    work_date: date = Field(..., description="勤務日（YYYY-MM-DD）")
-    location: Optional[str] = Field(
-        None,
-        description=(
-            "作業場所（例: '在' は在宅、'本' は本社など）\n"
-            "空文字または null の場合、スケジュールは削除されます"
-        )
-    )
-
 @router.post(
         "/schedules",
         dependencies=[Depends(verify_csrf_token)],
@@ -45,8 +34,9 @@ class ScheduleRequest(BaseModel):
             "指定されたユーザの作業場所スケジュールを登録または更新します\n"
             "作業場所が空またはnullの場合は削除されます"
             ),
-        response_description="登録・更新された作業場所スケジュール情報、または削除ステータスを返します"
-        )
+        response_description="登録・更新された作業場所スケジュール情報、または削除ステータスを返します",
+        response_model=Union[ScheduleResponse, dict],  # 削除時は {"status": "deleted"} を返すのでUnionにする
+    )
 def add_or_update_schedule(data: ScheduleRequest, db: Session = Depends(get_db)):
     try:
         existing = crud_schedule.get_schedule(db, data.user_id, data.work_date)
@@ -73,15 +63,16 @@ def add_or_update_schedule(data: ScheduleRequest, db: Session = Depends(get_db))
         raise HTTPException(status_code=500, detail="Unexpected error occurred")
 
 @router.get(
-        "/schedules",
-        summary="作業場所スケジュールの取得",
-        description=(
-            "作業場所スケジュールを取得します\n"
-            "オプションで `month` を指定することで、特定の月（例: '2025-05'）のスケジュールだけを取得できます\n"
-            "取得されるデータには、ユーザID、勤務日、作業場所が含まれます"
-            ),
-        response_description="作業場所スケジュールのリストを返します"
-        )
+    "/schedules",
+    summary="作業場所スケジュールの取得",
+    description=(
+        "作業場所スケジュールを取得します\n"
+        "オプションで `month` を指定することで、特定の月（例: '2025-05'）のスケジュールだけを取得できます\n"
+        "取得されるデータには、ユーザID、勤務日、作業場所が含まれます"
+        ),
+    response_description="作業場所スケジュールのリストを返します",
+    response_model=List[ScheduleResponse]
+)
 def list_schedules(month: Optional[str] = Query(None), db: Session = Depends(get_db)):
     try:
         results = crud_schedule.get_schedules_by_month(db, month)

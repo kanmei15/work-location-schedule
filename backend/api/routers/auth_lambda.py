@@ -13,6 +13,7 @@ from core.security import create_access_token, create_refresh_token
 from crud import user as crud_user
 from db import get_db
 from models.user_model import User
+from schemas.token_schema import LambdaLoginResponse
 
 logger = logging.getLogger(__name__)
 
@@ -26,19 +27,12 @@ def verify_lambda_api_key(x_api_key: str = Header(...)):
         logger.warning(f"Invalid API key attempted: {x_api_key}")
         raise HTTPException(status_code=403, detail="Forbidden: invalid API key")
 
-class LambdaLoginResponse(BaseModel):
-    access_token: str
-    refresh_token: str
-    csrf_token: str
-    is_default_password: bool
-    message: str
-
 @router.post(
     "/login/lambda",
     dependencies=[Depends(verify_lambda_api_key)],
     response_model=LambdaLoginResponse,
     summary="Lambda専用ログインAPI",
-    description="Lambdaからの呼び出し専用。アクセストークン、リフレッシュトークン、CSRFトークンをJSONで返します。"
+    description="Lambdaからの呼び出し専用。アクセストークン、リフレッシュトークン、CSRFトークンをJSONで返します。",
 )
 def login_for_lambda(
     form_data: OAuth2PasswordRequestForm = Depends(),

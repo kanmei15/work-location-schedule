@@ -1,19 +1,19 @@
 # api/user.py
 
 import logging
+
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
+from typing import List
 
 from core.security import get_current_user, verify_csrf_token
 from db import SessionLocal
 from crud import user as crud_user
+from schemas.user_schema import UserResponse, AllowanceUpdate  # ← スキーマを import
+from models.user_model import User  # current_user 依存関係で使うため必要
 
 logger = logging.getLogger(__name__)
-
-class AllowanceUpdate(BaseModel):
-    allowance: str
 
 router = APIRouter(
     dependencies=[Depends(get_current_user)]
@@ -27,12 +27,13 @@ def get_db():
         db.close()
 
 @router.post(
-        "/users",
-        dependencies=[Depends(verify_csrf_token)],
-        summary="新規ユーザの作成",
-        description="指定された名前で新しいユーザを作成します",
-        response_description="作成されたユーザ情報を返します"
-        )
+    "/users",
+    dependencies=[Depends(verify_csrf_token)],
+    summary="新規ユーザの作成",
+    description="指定された名前で新しいユーザを作成します",
+    response_description="作成されたユーザ情報を返します",
+    response_model=UserResponse
+)
 def create_user(name: str, db: Session = Depends(get_db)):
     try:
         user = crud_user.create_user(db, name)
@@ -47,14 +48,19 @@ def create_user(name: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Unexpected error occurred")
 
 @router.get(
-        "/users",
-        summary="全ユーザの一覧取得",
-        description="登録されている全ユーザの一覧を取得します",
-        response_description="ユーザ情報のリストを返します"
-        )
-def list_users(db: Session = Depends(get_db)):
+    "/users",
+    summary="全ユーザの一覧取得",
+    description="登録されている全ユーザの一覧を取得します",
+    response_description="ユーザ情報のリストを返します",
+    response_model=List[UserResponse]
+)
+def list_users(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     try:
-        users = crud_user.get_all_users(db)
+        #users = crud_user.get_all_users(db)
+        users = crud_user.get_all_users(db, current_user_id=current_user.id)
         logger.info(f"Fetched {len(users)} users")
         return users
     except SQLAlchemyError as e:
@@ -65,12 +71,12 @@ def list_users(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Unexpected error occurred")
 
 @router.patch(
-        "/users/{user_id}/commuting_allowance",
-        dependencies=[Depends(verify_csrf_token)],
-        summary="通勤手当の更新",
-        description="指定されたユーザの通勤手当の状態（申請・停止・不要など）を更新します",
-        response_description="更新の結果メッセージを返します"
-        )
+    "/users/{user_id}/commuting_allowance",
+    dependencies=[Depends(verify_csrf_token)],
+    summary="通勤手当の更新",
+    description="指定されたユーザの通勤手当の状態（申請・停止・不要など）を更新します",
+    response_description="更新の結果メッセージを返します"
+)
 def update_commuting_allowance(user_id: int, allowance_update: AllowanceUpdate, db: Session = Depends(get_db)):
     try:
         logger.debug(f"Received allowance (raw): {repr(allowance_update.allowance)}")
@@ -92,7 +98,8 @@ def update_commuting_allowance(user_id: int, allowance_update: AllowanceUpdate, 
     dependencies=[], # ここだけヘッダー認証とする（lambdaから実行するため）
     summary="スケジュール未登録ユーザの取得",
     description="指定された年月に勤務スケジュールが未登録のユーザを取得します",
-    response_description="未登録ユーザのリストを返します"
+    response_description="未登録ユーザのリストを返します",
+    response_model=List[UserResponse]
 )
 def get_users_missing_schedule(year: int, month: int, db: Session = Depends(get_db)):
     try:

@@ -4,32 +4,36 @@ import secrets
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from pydantic import BaseModel
+#from pydantic import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from config import settings
-from core.security import create_access_token, create_refresh_token, get_current_user, pwd_context 
+from core.password_utils import pwd_context
+from core.security import create_access_token, create_refresh_token, get_current_user
 from crud import user as crud_user
 from db import get_db
 from models.user_model import User
+from schemas.auth_schema import LoginResponse, PasswordChangeRequest 
+from schemas.common_schema import MessageResponse 
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 # パスワード変更用のリクエストボディ
-class PasswordChangeRequest(BaseModel):
-    old_password: str
-    new_password: str
+#class PasswordChangeRequest(BaseModel):
+#    old_password: str
+#    new_password: str
 
 # ログインエンドポイント
 @router.post(
-        "/login",
-        summary="ログイン",
-        description="ユーザ認証を行い、アクセストークン、リフレッシュトークン、CSRFトークンを返します",
-        response_description="ログイン成功時にトークンとステータスを返します"
-        )
+    "/login",
+    summary="ログイン",
+    description="ユーザ認証を行い、アクセストークン、リフレッシュトークン、CSRFトークンを返します",
+    response_description="ログイン成功時にトークンとステータスを返します",
+    response_model=LoginResponse
+)
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
@@ -93,11 +97,11 @@ def login(
 
 # ログアウトエンドポイント
 @router.post(
-        "/logout",
-        summary="ログアウト",
-        description="アクセストークンおよびリフレッシュトークンのクッキーを削除してログアウトします",
-        response_description="ログアウト成功のメッセージを返します"
-        )
+    "/logout",
+    summary="ログアウト",
+    description="アクセストークンおよびリフレッシュトークンのクッキーを削除してログアウトします",
+    response_description="ログアウト成功のメッセージを返します"
+)
 def logout():
     response = JSONResponse(content={"message": "Logged out"})
     response.delete_cookie("access_token")
@@ -107,11 +111,12 @@ def logout():
     return response
 
 @router.post(
-        "/change-password",
-        summary="パスワード変更",
-        description="現在のパスワードを検証し、新しいパスワードに更新します",
-        response_description="パスワード更新結果のメッセージを返します"
-        )
+    "/change-password",
+    summary="パスワード変更",
+    description="現在のパスワードを検証し、新しいパスワードに更新します",
+    response_description="パスワード更新結果のメッセージを返します",
+    response_model=MessageResponse
+)
 def change_password(
     request: PasswordChangeRequest,
     db: Session = Depends(get_db),

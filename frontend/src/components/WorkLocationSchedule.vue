@@ -10,6 +10,16 @@
             </select>
         </div>
 
+        <div class="palette">
+            <button
+                v-for="loc in locations"
+                :key="loc"
+                :style="getPaletteStyle(loc)"
+                @click="selectedLocation = loc">
+            {{ loc }}
+            </button>
+        </div>
+
         <table border="1">
             <thead>
                 <tr>
@@ -26,7 +36,6 @@
             <tbody>
                 <tr v-for="user in users" :key="user.id">
                     <td>{{ user.name }}</td>
-                    <!--<td>{{ user.commuting_allowance }}</td>-->
                     <td @click="user.id === currentUser?.id ? toggleCommutingAllowance(user) : null"
                         :style="{ cursor: user.id === currentUser?.id ? 'pointer' : 'not-allowed' }">
                         {{ user.commuting_allowance || '-' }}
@@ -58,12 +67,14 @@
 import {
     currentUser,
     users,
-    schedules,
     yearOptions,
     year,
     month,
     daysInMonth,
+    locations,
+    selectedLocation,
     getLocation,
+    getPaletteStyle,
     getHeaderStyle,
     getWeekdayName,
     getCommuteChangeStatus,

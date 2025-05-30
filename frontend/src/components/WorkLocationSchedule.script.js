@@ -16,11 +16,26 @@ export const year = ref(currentYear)
 export const month = ref(new Date().getMonth() + 1)
 
 const holidays = ref({})
-const locations = ['-', '本', '赤', '分', '東', '在', '休', '客', 'そ', '大', '沖', '博']
 
 export const daysInMonth = computed(() =>
     Array.from({ length: new Date(year.value, month.value, 0).getDate() }, (_, i) => i + 1)
 )
+
+export const selectedLocation = ref(null)
+export const locations = ['-', '本', '赤', '分', '東', '在', '休', '客', 'そ', '大', '沖', '博']
+const colorMap = {
+    '本': '#ffffff',
+    '赤': '#c6e0b4',
+    '分': '#c65911',
+    '東': '#ffe699',
+    '在': '#00b050',
+    '休': '#ff0000',
+    '客': '#ccccff',
+    'そ': '#ff00ff',
+    '大': '#bdd7ee',
+    '沖': '#7030a0',
+    '博': '#f3e5f5'
+}
 
 export async function loadData() {
     users.value = await fetchUsers()
@@ -33,6 +48,20 @@ export function getLocation(userId, day) {
     const date = `${year.value}-${String(month.value).padStart(2, '0')}-${String(day).padStart(2, '0')}`
     const record = schedules.value.find(s => s.user_id === userId && s.work_date === date)
     return record?.location
+}
+
+// パレットのスタイル変更
+export function getPaletteStyle(loc) {
+    return {
+        backgroundColor: colorMap[loc] || 'transparent',
+        opacity: selectedLocation.value === loc ? 1 : 0.3,
+        color: '#000',
+        margin: '4px',
+        padding: '6px 12px',
+        borderRadius: '8px',
+        border: selectedLocation.value === loc ? '2px solid #555' : '1px solid #ccc',
+        cursor: 'pointer'
+    }
 }
 
 // ヘッダのスタイル変更
@@ -86,11 +115,6 @@ export function getCommuteChangeStatus(commuteAllowance, remoteDays, workingDays
 
 export function getCellStyle(userId, day) {
     const loc = getLocation(userId, day)
-    const colorMap = {
-        '本': '#ffffff', '赤': '#c6e0b4', '分': '#c65911', '東': '#ffe699',
-        '在': '#00b050', '休': '#ff0000', '客': '#ccccff', 'そ': '#ff00ff', '大': '#bdd7ee',
-        '沖': '#7030a0', '博': '#f3e5f5'
-    }
 
     const dateStr = `${year.value}-${String(month.value).padStart(2, '0')}-${String(day).padStart(2, '0')}`
     const dateObj = new Date(dateStr)
@@ -162,19 +186,17 @@ export async function fetchCurrentUser() {
 }
 
 export async function toggleLocation(userId, day) {
-    if (!currentUser.value || currentUser.value.id !== userId) return  // ← ここでロック！
+    if (!currentUser.value || currentUser.value.id !== userId) return
+    if (!selectedLocation.value) return
 
     const date = `${year.value}-${String(month.value).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    const current = getLocation(userId, day)
-    const currentIndex = locations.indexOf(current || '-')
-    const next = locations[(currentIndex + 1) % locations.length]
+    const next = selectedLocation.value
 
     if (next === '-') {
-        // 該当のスケジュールを削除
+        // 削除
         schedules.value = schedules.value.filter(s => !(s.user_id === userId && s.work_date === date))
         await updateSchedule(userId, date, null)
     } else {
-        // 既存があれば更新、なければ追加
         const index = schedules.value.findIndex(s => s.user_id === userId && s.work_date === date)
         if (index >= 0) {
             schedules.value[index].location = next
@@ -183,6 +205,27 @@ export async function toggleLocation(userId, day) {
         }
         await updateSchedule(userId, date, next)
     }
+    /*    if (!currentUser.value || currentUser.value.id !== userId) return  // ← ここでロック！
+    
+        const date = `${year.value}-${String(month.value).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+        const current = getLocation(userId, day)
+        const currentIndex = locations.indexOf(current || '-')
+        const next = locations[(currentIndex + 1) % locations.length]
+    
+        if (next === '-') {
+            // 該当のスケジュールを削除
+            schedules.value = schedules.value.filter(s => !(s.user_id === userId && s.work_date === date))
+            await updateSchedule(userId, date, null)
+        } else {
+            // 既存があれば更新、なければ追加
+            const index = schedules.value.findIndex(s => s.user_id === userId && s.work_date === date)
+            if (index >= 0) {
+                schedules.value[index].location = next
+            } else {
+                schedules.value.push({ user_id: userId, work_date: date, location: next })
+            }
+            await updateSchedule(userId, date, next)
+        }*/
 }
 
 // 通勤手当をクリックで「申請 → 停止 → 不要 → 申請...」と切り替える

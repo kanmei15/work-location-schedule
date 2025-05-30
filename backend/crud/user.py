@@ -2,9 +2,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import extract, and_, not_, exists
 from typing import Optional
 
-from core.security import pwd_context
 from models.user_model import User
 from models.schedule_model import WorkSchedule
+from core.password_utils import pwd_context
 
 def create_user(db: Session, name: str) -> User:
     user = User(name=name)
@@ -15,6 +15,16 @@ def create_user(db: Session, name: str) -> User:
 
 def get_all_users(db: Session):
     return db.query(User).all()
+
+def get_all_users(db: Session, current_user_id: Optional[int] = None):
+    query = db.query(User)
+    if current_user_id is not None:
+        # CASE文でログイン中のユーザーを先頭にする
+        query = query.order_by(
+            (User.id != current_user_id).asc(),  # ログイン中ユーザー（False=0）が先頭になる
+            User.id.asc()  # それ以外はID順
+        )
+    return query.all()
 
 def get_user_by_id(db: Session, user_id: int):
     return db.query(User).filter(User.id == user_id).first()

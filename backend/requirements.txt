@@ -2,6 +2,7 @@ fastapi
 passlib[bcrypt]
 psycopg2-binary
 pydantic
+pydantic[email]
 pydantic-settings
 python-dotenv
 python-jose[cryptography]

@@ -4,18 +4,17 @@ from datetime import datetime, timedelta, timezone
 from fastapi import Request, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from typing import Optional
 
 from config import settings
+from crud.user import get_user_by_id
 from db import get_db
 from models.user_model import User
 
 # ロガー設定
 logger = logging.getLogger(__name__)
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 # トークン生成（共通）
@@ -99,7 +98,7 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)) -> U
         raise HTTPException(status_code=401, detail="Invalid token")
 
     # DB からユーザを取得
-    user = db.query(User).filter(User.id == int(user_id)).first()
+    user = get_user_by_id(db, int(user_id))
     if not user:
         logger.warning(f"User not found: user_id={user_id}")
         raise HTTPException(status_code=404, detail="User not found")

@@ -36,3 +36,28 @@ th {
     border: 1px solid #ccc;
     background-color: #fff;
 }
+
+.palette {
+    margin-bottom: 12px;
+}
+
+.palette-item {
+    display: inline-block;
+    margin: 4px;
+    padding: 6px 12px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #f5f5f5;
+    user-select: none;
+}
+
+.palette-item:hover {
+    background-color: #ddd;
+}
+
+.palette-item.selected {
+    border-color: #333;
+    background-color: #bbb;
+    font-weight: bold;
+}
